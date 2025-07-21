@@ -4,42 +4,23 @@
 #include "../Public/SEditableTableListViewRow.h"
 #include "Fonts/FontMeasure.h"
 
+const FName SEditableTable::RowIdColumnId("RowId");
+
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void SEditableTable::Construct(const FArguments& InArgs)
 {
-	//Setup data
+	// Init data
 	FillTestData();
+
 	CacheColumns();
+	RefreshRowNumberColumnWidth();
 
 	SetDefaultSort();
 
-	//Create columns widgets
-	ColumnNamesHeaderRow = SNew(SHeaderRow);
-	for (int32 ColumnIndex = 0; ColumnIndex < AvailableColumns.Num(); ++ColumnIndex)
-	{
-		const FEditableTableColumnHeaderDataPtr& ColumnData = AvailableColumns[ColumnIndex];
+	// Create columns widgets
+	ColumnNamesHeaderRow = CreateHeader();
 
-		ColumnNamesHeaderRow->AddColumn(
-			SHeaderRow::Column(ColumnData->ColumnId)
-			.DefaultLabel(ColumnData->DisplayName)
-			.ManualWidth(TAttribute<float>::Create(TAttribute<float>::FGetter::CreateSP(this, &SEditableTable::GetColumnWidth, ColumnIndex)))
-			.OnWidthChanged(this, &SEditableTable::OnColumnResized, ColumnIndex)
-			.SortMode(this, &SEditableTable::GetColumnSortMode, ColumnData->ColumnId)
-			.OnSort(this, &SEditableTable::OnColumnSortModeChanged)
-			[
-				SNew(SBox)
-					.Padding(FMargin(0, 4, 0, 4))
-					.VAlign(VAlign_Fill)
-					[
-						SNew(STextBlock)
-							.Justification(ETextJustify::Left)
-							.Text(ColumnData->DisplayName)
-					]
-			]
-		);
-	}
-
-	//Scroll bars
+	// Scroll bars
 	TSharedRef<SScrollBar> HorizontalScrollBar = SNew(SScrollBar)
 		.Orientation(Orient_Horizontal)
 		.Thickness(FVector2D(12.0f, 12.0f));
@@ -48,7 +29,7 @@ void SEditableTable::Construct(const FArguments& InArgs)
 		.Orientation(Orient_Vertical)
 		.Thickness(FVector2D(12.0f, 12.0f));
 
-	//Rows List View
+	// Rows List View
 	CellsListView = SNew(SListView<FEditableTableRowListViewDataPtr>)
 		.ListItemsSource(&AvailableRows)
 		.HeaderRow(ColumnNamesHeaderRow)
@@ -56,9 +37,10 @@ void SEditableTable::Construct(const FArguments& InArgs)
 		.ExternalScrollbar(VerticalScrollBar)
 		.ConsumeMouseWheel(EConsumeMouseWheel::Always)
 		.SelectionMode(ESelectionMode::Single)
+		.ReturnFocusToSelection(false)
 		.AllowOverscroll(EAllowOverscroll::No);
 
-	//Combine everything
+	// Combine everything
 	ChildSlot
 	[
 		SNew(SVerticalBox)
@@ -116,16 +98,15 @@ void SEditableTable::CacheColumns()
 		}
 	}
 
+	TSharedRef<FSlateFontMeasure> FontMeasure = FSlateApplication::Get().GetRenderer()->GetFontMeasureService();
+	const FTextBlockStyle& CellTextStyle = FAppStyle::GetWidgetStyle<FTextBlockStyle>("DataTableEditor.CellText");
+
 	// Populate the column data
 	AvailableColumns.Reset(StructProps.Num());
 	for (int32 Index = 0; Index < StructProps.Num(); ++Index)
 	{
 		const FProperty* Prop = StructProps[Index];
 		const FText PropertyDisplayName = FText::FromString(Prop->GetName());
-
-		TSharedRef<FSlateFontMeasure> FontMeasure = FSlateApplication::Get().GetRenderer()->GetFontMeasureService();
-		const FTextBlockStyle& CellTextStyle = FAppStyle::GetWidgetStyle<FTextBlockStyle>("DataTableEditor.CellText");
-		static const float CellPadding = 10.0f;
 
 		FEditableTableColumnHeaderDataPtr CachedColumnData = MakeShareable(new FEditableTableColumnHeaderData());
 		CachedColumnData->ColumnId = Prop->GetFName();
@@ -147,24 +128,81 @@ void SEditableTable::CacheColumns()
 	}
 }
 
+TSharedPtr<SHeaderRow> SEditableTable::CreateHeader()
+{
+	TSharedPtr<SHeaderRow> Header = SNew(SHeaderRow);
+
+	// RowId
+	Header->AddColumn(
+		SHeaderRow::Column(RowIdColumnId)
+		.SortMode(this, &SEditableTable::GetColumnSortMode, RowIdColumnId)
+		.OnSort(this, &SEditableTable::OnColumnSortModeChanged)
+		.ManualWidth(this, &SEditableTable::GetRowIdColumnWidth)
+		.OnWidthChanged(this, &SEditableTable::OnRowIdColumnResized)
+		[
+			SNew(SBox)
+			.VAlign(VAlign_Fill)
+			.HAlign(HAlign_Fill)
+			[
+				SNew(SBox)
+				.Padding(FMargin(0, 4, 0, 4))
+				.VAlign(VAlign_Fill)
+				[
+					SNew(STextBlock)
+					.Justification(ETextJustify::Left)
+					.Text(FText::FromName(RowIdColumnId))
+				]
+			]
+		]
+
+	);
+
+	// All other columns
+	for (int32 ColumnIndex = 0; ColumnIndex < AvailableColumns.Num(); ++ColumnIndex)
+	{
+		const FEditableTableColumnHeaderDataPtr& ColumnData = AvailableColumns[ColumnIndex];
+
+		Header->AddColumn(
+			SHeaderRow::Column(ColumnData->ColumnId)
+			.DefaultLabel(ColumnData->DisplayName)
+			.ManualWidth(TAttribute<float>::Create(TAttribute<float>::FGetter::CreateSP(this, &SEditableTable::GetColumnWidth, ColumnIndex)))
+			.OnWidthChanged(this, &SEditableTable::OnColumnResized, ColumnIndex)
+			.SortMode(this, &SEditableTable::GetColumnSortMode, ColumnData->ColumnId)
+			.OnSort(this, &SEditableTable::OnColumnSortModeChanged)
+			[
+				SNew(SBox)
+					.Padding(FMargin(0, 4, 0, 4))
+					.VAlign(VAlign_Fill)
+					[
+						SNew(STextBlock)
+							.Justification(ETextJustify::Left)
+							.Text(ColumnData->DisplayName)
+					]
+			]
+		);
+	}
+
+	return Header;
+}
+
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 void SEditableTable::FillTestData()
 {
 	UEditableTableData* Dog = NewObject<UEditableTableData>();
-	Dog->Animal = "Dog";
-	Dog->Color = "White";
-	Dog->Age = "10";
+	Dog->Animal = FText::FromString("Dog");
+	Dog->Color = FText::FromString("White");
+	Dog->Age = FText::FromString("10");
 
 	UEditableTableData* Cat = NewObject<UEditableTableData>();
-	Cat->Animal = "Cat";
-	Cat->Color = "Black";
-	Cat->Age = "5";
+	Cat->Animal = FText::FromString("Cat");
+	Cat->Color = FText::FromString("Black");
+	Cat->Age = FText::FromString("5");
 
 	UEditableTableData* Bunny = NewObject<UEditableTableData>();
-	Bunny->Animal = "Bunny";
-	Bunny->Color = "Grey";
-	Bunny->Age = "8";
+	Bunny->Animal = FText::FromString("This is a long animal name");
+	Bunny->Color = FText::FromString("Grey");
+	Bunny->Age = FText::FromString("8446131");
 
 	FEditableTableRowListViewDataPtr DataDog = MakeShareable(new FEditableTableRowListViewData());
 	DataDog->RowId = FName(FString::FromInt(0));
@@ -210,6 +248,25 @@ void SEditableTable::OnColumnResized(const float NewWidth, const int32 ColumnInd
 	}
 }
 
+void SEditableTable::OnRowIdColumnResized(const float NewWidth)
+{
+	RowIdColumnWidth = NewWidth;
+}
+
+void SEditableTable::RefreshRowNumberColumnWidth()
+{
+	TSharedRef<FSlateFontMeasure> FontMeasure = FSlateApplication::Get().GetRenderer()->GetFontMeasureService();
+	const FTextBlockStyle& CellTextStyle = FAppStyle::GetWidgetStyle<FTextBlockStyle>("DataTableEditor.CellText");
+
+	RowIdColumnWidth = (float)FontMeasure->Measure(RowIdColumnId.ToString(), CellTextStyle.Font).X + CellPadding;
+	for (const FEditableTableRowListViewDataPtr& RowData : AvailableRows)
+	{
+		const float RowNumberWidth = (float)FontMeasure->Measure(FString::FromInt(RowData->RowNum), CellTextStyle.Font).X + CellPadding;
+		RowIdColumnWidth = FMath::Max(RowIdColumnWidth, RowNumberWidth);
+	}
+
+}
+
 EColumnSortMode::Type SEditableTable::GetColumnSortMode(const FName ColumnId) const
 {
 	if (SortByColumn != ColumnId)
@@ -223,7 +280,7 @@ EColumnSortMode::Type SEditableTable::GetColumnSortMode(const FName ColumnId) co
 void SEditableTable::SetDefaultSort()
 {
 	SortMode = EColumnSortMode::Ascending;
-	SortByColumn = AvailableColumns.IsEmpty() ? "" : AvailableColumns[0]->ColumnId;
+	SortByColumn = RowIdColumnId;
 }
 
 void SEditableTable::OnColumnSortModeChanged(const EColumnSortPriority::Type SortPriority, const FName& ColumnId, const EColumnSortMode::Type InSortMode)
@@ -247,10 +304,10 @@ void SEditableTable::OnColumnSortModeChanged(const EColumnSortPriority::Type Sor
 		{
 			AvailableRows.Sort([this, ColumnIndex](const FEditableTableRowListViewDataPtr& first, const FEditableTableRowListViewDataPtr& second)
 				{
-					FText FirstText = GetCellText(first, ColumnIndex);
-					FText SecondText = GetCellText(second, ColumnIndex);
+					FText* FirstText = GetCellText(first, ColumnIndex);
+					FText* SecondText = GetCellText(second, ColumnIndex);
 
-					int32 Result = FirstText.ToString().Compare(FirstText.ToString());
+					int32 Result = FirstText->ToString().Compare(FirstText->ToString());
 
 					if (!Result)
 					{
@@ -266,10 +323,10 @@ void SEditableTable::OnColumnSortModeChanged(const EColumnSortPriority::Type Sor
 		{
 			AvailableRows.Sort([this, ColumnIndex](const FEditableTableRowListViewDataPtr& first, const FEditableTableRowListViewDataPtr& second)
 				{
-					FText FirstText = GetCellText(first, ColumnIndex);
-					FText SecondText = GetCellText(second, ColumnIndex);
+					FText* FirstText = GetCellText(first, ColumnIndex);
+					FText* SecondText = GetCellText(second, ColumnIndex);
 
-					int32 Result = FirstText.ToString().Compare(FirstText.ToString());
+					int32 Result = FirstText->ToString().Compare(FirstText->ToString());
 
 					if (!Result)
 					{
@@ -284,20 +341,20 @@ void SEditableTable::OnColumnSortModeChanged(const EColumnSortPriority::Type Sor
 	CellsListView->RequestListRefresh();
 }
 
-FText SEditableTable::GetCellText(FEditableTableRowListViewDataPtr InRowDataPointer, int32 ColumnIndex) const
+FText* SEditableTable::GetCellText(FEditableTableRowListViewDataPtr InRowDataPointer, int32 ColumnIndex) const
 {
 	if (!AvailableColumns.IsValidIndex(ColumnIndex))
 	{
-		return FText::GetEmpty();
+		return nullptr;
 	}
 
 	const FProperty* Property = AvailableColumns[ColumnIndex]->Property;
 
-	//String property
-	if (FString* StringValue = Property->ContainerPtrToValuePtr<FString>(InRowDataPointer->RowData))
+	//Text property
+	if (FText* TextValue = Property->ContainerPtrToValuePtr<FText>(InRowDataPointer->RowData))
 	{
-		return FText::FromString(*StringValue);
+		return TextValue;
 	}
 
-	return FText::GetEmpty();
+	return nullptr;
 }

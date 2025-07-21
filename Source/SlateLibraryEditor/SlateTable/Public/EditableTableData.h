@@ -5,7 +5,7 @@
 #include "EditableTableData.generated.h"
 
 /**
- * 
+ * Data to be displayed in the table
  */
 UCLASS()
 class SLATELIBRARYEDITOR_API UEditableTableData : public UObject
@@ -14,11 +14,11 @@ class SLATELIBRARYEDITOR_API UEditableTableData : public UObject
 
 public:
 	UPROPERTY()
-	FString Animal;
+	FText Animal;
 
 	UPROPERTY()
-	FString Color;
+	FText Color;
 
 	UPROPERTY()
-	FString Age;
+	FText Age;
 };

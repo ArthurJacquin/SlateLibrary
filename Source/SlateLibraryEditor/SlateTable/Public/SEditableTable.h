@@ -8,6 +8,9 @@ struct FEditableTableRowListViewData
 {
 	/** Unique ID used to identify this row */
 	FName RowId;
+	
+	/** Insertion number of the row */
+	uint32 RowNum;
 
 	/** Display name of this row */
 	FText DisplayName;
@@ -15,10 +18,7 @@ struct FEditableTableRowListViewData
 	/** The calculated height of this row taking into account the cell data for each column */
 	float DesiredRowHeight;
 
-	/** Insertion number of the row */
-	uint32 RowNum;
-
-	/** Array corresponding to each cell in this row */
+	/** Object containing the data of each cell in this row */
 	UEditableTableData* RowData;
 };
 
@@ -53,13 +53,17 @@ public:
 	/** Constructs this widget with InArgs */
 	void Construct(const FArguments& InArgs);
 
-	FText GetCellText(FEditableTableRowListViewDataPtr InRowDataPointer, int32 ColumnIndex) const;
+	FText* GetCellText(FEditableTableRowListViewDataPtr InRowDataPointer, int32 ColumnIndex) const;
 
 	/** Array of the columns that are available for editing */
 	TArray<FEditableTableColumnHeaderDataPtr> AvailableColumns;
 
 	/** Array of the rows that are available for editing */
 	TArray<FEditableTableRowListViewDataPtr> AvailableRows;
+
+protected:
+	/** The column id for the row id list view column */
+	static const FName RowIdColumnId;
 
 private:
 	/** Struct holding information about the current column widths */
@@ -82,11 +86,19 @@ private:
 
 	void CacheColumns();
 
+	TSharedPtr<SHeaderRow> CreateHeader();
+
 	void FillTestData();
 
 	float GetColumnWidth(const int32 ColumnIndex) const;
 
 	void OnColumnResized(const float NewWidth, const int32 ColumnIndex);
+
+	float GetRowIdColumnWidth() const { return RowIdColumnWidth; }
+
+	void OnRowIdColumnResized(const float NewWidth);
+
+	void RefreshRowNumberColumnWidth();
 
 	EColumnSortMode::Type GetColumnSortMode(const FName ColumnId) const;
 	
@@ -94,11 +106,16 @@ private:
 
 	void OnColumnSortModeChanged(const EColumnSortPriority::Type SortPriority, const FName& ColumnId, const EColumnSortMode::Type InSortMode);
 
+	/** Header of the table **/
 	TSharedPtr<SHeaderRow> ColumnNamesHeaderRow;
 
 	/** Widths of data table cell columns */
 	TArray<FColumnWidth> ColumnWidths;
 
+	/** Width of the row id column **/
+	float RowIdColumnWidth;
+
+	/** Data of the rows **/
 	TSharedPtr<SListView<FEditableTableRowListViewDataPtr>> CellsListView;
 
 	/** Currently selected sorting mode */
@@ -106,4 +123,7 @@ private:
 
 	/** Specify which column to sort with */
 	FName SortByColumn;
+
+	/** Cells extra width **/
+	const float CellPadding = 30.0f;
 };
