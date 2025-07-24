@@ -14,7 +14,10 @@ public class SlateLibraryEditor: ModuleRules
             "Blutility",
             "UMG",
             "UnrealEd",
-            "InputCore"
+            "InputCore",
+            "EditorFramework",
+            "WidgetRegistration",
+            "InteractiveToolsFramework"
         });
     }
 }

@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleInterface.h"
 
-class SlateLibraryEditorModule : public FDefaultModuleImpl
+class SlateLibraryEditor : public FDefaultModuleImpl
 {
 public:
 	virtual void StartupModule() override;
