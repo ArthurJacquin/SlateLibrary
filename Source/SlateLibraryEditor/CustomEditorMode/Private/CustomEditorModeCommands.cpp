@@ -18,7 +18,17 @@ void FCustomEditorModeCommands::RegisterCommands()
 	UI_COMMAND(CustomWidget, "Custom Widget", "Custom Widget", EUserInterfaceActionType::RadioButton, FInputChord());
 	ToolCommands.Add(CustomWidget);
 	
-	UI_COMMAND(AnotherTool, "Another Tool", "Another Tool", EUserInterfaceActionType::RadioButton, FInputChord());
+	// Another tool
+	FUICommandInfo::MakeCommandInfo(
+		AsShared(),
+		AnotherTool,
+		TEXT("Another Tool"),
+		LOCTEXT("AnotherToolCommandName", "Another Tool"),
+		LOCTEXT("AnotherToolToolTooltip", "This is the tooltip of Another Tool"),
+		FSlateIcon(FAppStyle::GetAppStyleSetName(), "Level.VisibleIcon16x"),
+		EUserInterfaceActionType::RadioButton,
+		FInputChord()
+	);
 	ToolCommands.Add(AnotherTool);
 }
 
