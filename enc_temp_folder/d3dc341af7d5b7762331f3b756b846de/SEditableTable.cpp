@@ -307,19 +307,11 @@ void SEditableTable::OnColumnSortModeChanged(const EColumnSortPriority::Type Sor
 					FText* FirstText = GetCellText(first, ColumnIndex);
 					FText* SecondText = GetCellText(second, ColumnIndex);
 
-					if (FirstText->IsNumeric() && SecondText->IsNumeric())
-					{
-						int32 FirstNumber = FCString::Atoi(*FirstText->ToString());
-						int32 SecondNumber = FCString::Atoi(*SecondText->ToString());
-						
-						return FirstNumber < SecondNumber;
-					}
-
-					int32 Result = FirstText->ToString().Compare(SecondText->ToString());
+					int32 Result = FirstText->ToString().Compare(FirstText->ToString());
 
 					if (!Result)
 					{
-						return first->RowNum <= second->RowNum;
+						return first->RowNum < second->RowNum;
 
 					}
 
@@ -334,15 +326,7 @@ void SEditableTable::OnColumnSortModeChanged(const EColumnSortPriority::Type Sor
 					FText* FirstText = GetCellText(first, ColumnIndex);
 					FText* SecondText = GetCellText(second, ColumnIndex);
 
-					if (FirstText->IsNumeric() && SecondText->IsNumeric())
-					{
-						int32 FirstNumber = FCString::Atoi(*FirstText->ToString());
-						int32 SecondNumber = FCString::Atoi(*SecondText->ToString());
-
-						return FirstNumber > SecondNumber;
-					}
-
-					int32 Result = FirstText->ToString().Compare(SecondText->ToString());
+					int32 Result = FirstText->ToString().Compare(FirstText->ToString());
 
 					if (!Result)
 					{
