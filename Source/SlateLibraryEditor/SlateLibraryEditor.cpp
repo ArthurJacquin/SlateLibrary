@@ -8,6 +8,7 @@
 #include "EditorModeRegistry.h"
 #include "CustomEditorMode/Public/CustomEditorModeCommands.h"
 #include "Utilities/Public/SlateCommonUtilities.h"
+#include "Framework/Docking/TabManager.h"
 
 IMPLEMENT_MODULE(SlateLibraryEditor, SlateLibraryEditor);
 
@@ -31,6 +32,12 @@ void SlateLibraryEditor::StartupModule()
 
     // Register Custom Editor Mode commands
     FCustomEditorModeCommands::Register();
+
+    //Dockable Tab Spawner: Register tab to spawn
+    FGlobalTabmanager::Get()->RegisterTabSpawner(DockableTabId,
+        FOnSpawnTab::CreateRaw(this, &SlateLibraryEditor::SpawnDockableTab),
+        FCanSpawnTab()
+        );
 }
 
 void SlateLibraryEditor::ShutdownModule()
@@ -38,6 +45,8 @@ void SlateLibraryEditor::ShutdownModule()
     // Unregister Custom Editor Mode commands
     FCustomEditorModeCommands::Unregister();
 }
+
+const FName SlateLibraryEditor::DockableTabId = TEXT("DockableTab");
 
 void SlateLibraryEditor::ExtendTopBarMenu(FMenuBarBuilder& MenuBarBuilder)
 {
@@ -50,11 +59,20 @@ void SlateLibraryEditor::ExtendTopBarMenu(FMenuBarBuilder& MenuBarBuilder)
 
 void SlateLibraryEditor::MakeTrainingMenu(FMenuBuilder& MenuBuilder)
 {
+    // Slate Table
     MenuBuilder.AddMenuEntry(
         LOCTEXT("SlateTableTest", "Slate Table"),
         LOCTEXT("SlateTableTooltip", "A table made with slate"),
         FSlateIcon(),
         FUIAction(FExecuteAction::CreateRaw(this, &SlateLibraryEditor::OpenSlateTableWidget))
+    );
+
+    // Dockable tab spawner
+    MenuBuilder.AddMenuEntry(
+        LOCTEXT("DockableTabSpawner", "Dockable Tab Spawner"),
+        LOCTEXT("DockableTabSpawnerTooltip", "Spawn a dockable tab"),
+        FSlateIcon(),
+        FUIAction(FExecuteAction::CreateLambda([this](){ FGlobalTabmanager::Get()->TryInvokeTab(DockableTabId); }))
     );
 }
 
@@ -65,6 +83,17 @@ void SlateLibraryEditor::OpenSlateTableWidget()
         SNew(SEditableTable),
         ESizingRule::Autosized
         );
+}
+
+TSharedRef<SDockTab> SlateLibraryEditor::SpawnDockableTab(const FSpawnTabArgs& Args)
+{
+    TSharedPtr<SDockTab> DockableTab = SNew(SDockTab);
+    DockableTab->SetContent(
+        SNew(STextBlock)
+        .Text(LOCTEXT("DockableTabContentText", "A Dockable Tab"))
+    );
+
+    return DockableTab.ToSharedRef();
 }
 
 #undef LOCTEXT_NAMESPACE
