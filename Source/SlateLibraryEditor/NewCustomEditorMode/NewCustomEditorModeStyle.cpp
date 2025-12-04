@@ -1,13 +1,13 @@
-#include "CustomEditorModeStyle_New.h"
+#include "NewCustomEditorModeStyle.h"
 #include "Styling/SlateStyleRegistry.h"
 #include "Styling/SlateStyleMacros.h"
 #include "Styling/CoreStyle.h"
 
 #define RootToContentDir StyleSet->RootToContentDir
 
-TSharedPtr<FSlateStyleSet> FCustomEditorModeStyle_New::StyleSet = nullptr;
+TSharedPtr<FSlateStyleSet> FNewCustomEditorModeStyle::StyleSet = nullptr;
 
-void FCustomEditorModeStyle_New::Initialize()
+void FNewCustomEditorModeStyle::Initialize()
 {
 	// Only register once
 	if (StyleSet.IsValid())
@@ -50,7 +50,7 @@ void FCustomEditorModeStyle_New::Initialize()
 	FSlateStyleRegistry::RegisterSlateStyle(*StyleSet.Get());
 }
 
-void FCustomEditorModeStyle_New::Shutdown()
+void FNewCustomEditorModeStyle::Shutdown()
 {
 	if (StyleSet.IsValid())
 	{
@@ -60,23 +60,23 @@ void FCustomEditorModeStyle_New::Shutdown()
 	}
 }
 
-TSharedPtr<class ISlateStyle> FCustomEditorModeStyle_New::Get()
+TSharedPtr<class ISlateStyle> FNewCustomEditorModeStyle::Get()
 {
 	return StyleSet;
 }
 
-FName FCustomEditorModeStyle_New::GetStyleSetName()
+FName FNewCustomEditorModeStyle::GetStyleSetName()
 {
 	static FName StyleSetName(TEXT("NewCustomEditorModeStyle"));
 	return StyleSetName;
 }
 
-const FSlateBrush* FCustomEditorModeStyle_New::GetBrush(FName PropertyName, const ANSICHAR* Specifier /*= NULL*/)
+const FSlateBrush* FNewCustomEditorModeStyle::GetBrush(FName PropertyName, const ANSICHAR* Specifier /*= NULL*/)
 {
 	return Get()->GetBrush(PropertyName, Specifier);
 }
 
-FString FCustomEditorModeStyle_New::InContent(const FString& RelativePath, const ANSICHAR* Extension)
+FString FNewCustomEditorModeStyle::InContent(const FString& RelativePath, const ANSICHAR* Extension)
 {
 	static FString ContentDir = FPaths::ProjectContentDir() / TEXT("Slate/NewCustomEditorModeStyle");
 	return (ContentDir / RelativePath) + Extension;

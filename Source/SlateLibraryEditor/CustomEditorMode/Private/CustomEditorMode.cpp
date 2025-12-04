@@ -1,12 +1,12 @@
-#include "../Public/CustomEditorMode.h"
-#include "../Public/CustomEditorModeToolkit.h"
-#include "../Public/CustomEditorModeCommands.h"
-#include "../Public/CustomWidgetTool.h"
-#include "../Public/AnotherTool.h"
+#include "CustomEditorMode/Public/CustomEditorMode.h"
+#include "CustomEditorMode/Public/CustomEditorModeToolkit.h"
+#include "CustomEditorMode/Public/CustomEditorModeCommands.h"
+#include "CustomEditorMode/Public/CustomWidgetTool.h"
+#include "CustomEditorMode/Public/AnotherTool.h"
 #include "Tools/UEdMode.h"
 #include "Tools/EdModeInteractiveToolsContext.h"
 
-#define LOCTEXT_NAMESPACE "FCustomEditorMode"
+#define LOCTEXT_NAMESPACE "CustomEditorMode"
 
 const FEditorModeID UCustomEditorMode::ModeId = TEXT("EM_CustomModeId");
 
@@ -55,3 +55,5 @@ void UCustomEditorMode::RegisterTools()
 	RegisterTool(Commands.AnotherTool, AnotherToolId, AnotherToolBuilder);
 
 }
+
+#undef LOCTEXT_NAMESPACE

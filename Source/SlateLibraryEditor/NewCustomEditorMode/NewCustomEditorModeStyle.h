@@ -7,7 +7,7 @@ struct FSlateBrush;
 /**
  * Style for the New Custom Editor Mode
  */
-class SLATELIBRARYEDITOR_API FCustomEditorModeStyle_New
+class SLATELIBRARYEDITOR_API FNewCustomEditorModeStyle
 {
 public:
 	static void Initialize();

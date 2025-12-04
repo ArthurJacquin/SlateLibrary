@@ -1,6 +1,6 @@
 #include "../Public/CustomEditorModeCommands.h"
 
-#define LOCTEXT_NAMESPACE "CustomEditorMode"
+#define LOCTEXT_NAMESPACE "CustomEditorModeCommands"
 
 FCustomEditorModeCommands::FCustomEditorModeCommands()
 	: TCommands("CustomEditorMode",

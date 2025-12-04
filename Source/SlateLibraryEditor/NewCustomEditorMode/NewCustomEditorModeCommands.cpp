@@ -1,17 +1,17 @@
-#include "CustomEditorModeCommands_New.h"
-#include "CustomEditorModeStyle_New.h"
+#include "NewCustomEditorModeCommands.h"
+#include "NewCustomEditorModeStyle.h"
 
 #define LOCTEXT_NAMESPACE "NewCustomEditorMode"
 
-FCustomEditorModeCommands_New::FCustomEditorModeCommands_New()
+FNewCustomEditorModeCommands::FNewCustomEditorModeCommands()
 	: TCommands("NewCustomEditorModeCommands",
 		NSLOCTEXT("NewCustomEditorMode", "NewCustomEditorModeCommands", "New Custom Editor Mode"),
 		NAME_None,
-		FCustomEditorModeStyle_New::Get()->GetStyleSetName())
+		FNewCustomEditorModeStyle::Get()->GetStyleSetName())
 {
 }
 
-void FCustomEditorModeCommands_New::RegisterCommands()
+void FNewCustomEditorModeCommands::RegisterCommands()
 {
 	// Macro to register palettes and store them
 #define REGISTER_PALETTE_COMMAND(ToolCommandInfo, PaletteName, ToolTip) \
@@ -40,7 +40,7 @@ void FCustomEditorModeCommands_New::RegisterCommands()
 #undef REGISTER_TOOL_COMMAND
 }
 
-TSharedPtr<FUICommandInfo> FCustomEditorModeCommands_New::FindToolByName(const FString& Name, bool& bFound) const
+TSharedPtr<FUICommandInfo> FNewCustomEditorModeCommands::FindToolByName(const FString& Name, bool& bFound) const
 {
 	bFound = false;
 	for (const FStartToolCommand& Command : RegisteredTools)
@@ -55,7 +55,7 @@ TSharedPtr<FUICommandInfo> FCustomEditorModeCommands_New::FindToolByName(const F
 	return TSharedPtr<FUICommandInfo>();
 }
 
-TSharedPtr<FUICommandInfo> FCustomEditorModeCommands_New::FindPaletteByName(const FString& Name, bool& bFound) const
+TSharedPtr<FUICommandInfo> FNewCustomEditorModeCommands::FindPaletteByName(const FString& Name, bool& bFound) const
 {
 	bFound = false;
 	for (const FPaletteCommand& Command : RegisteredPalettes)

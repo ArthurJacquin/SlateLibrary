@@ -3,21 +3,21 @@
 #include "CoreMinimal.h"
 #include "Tools/UEdMode.h"
 
-#include "CustomEditorMode_New.generated.h"
+#include "NewCustomEditorMode.generated.h"
 
-class FCustomEditorModeToolkit_New;
+class FNewCustomEditorModeToolkit;
 
 /**
  * A custom editor mode
  */
  UCLASS()
-class SLATELIBRARYEDITOR_API UCustomEditorMode_New : public UEdMode
+class SLATELIBRARYEDITOR_API UNewCustomEditorMode : public UEdMode
 {
 	GENERATED_BODY()
 
 public:
-	UCustomEditorMode_New();
-	virtual ~UCustomEditorMode_New() override;
+	UNewCustomEditorMode();
+	virtual ~UNewCustomEditorMode() override;
 
 	const static FEditorModeID ModeId;
 	const static FString EnableSelectionToolId;
@@ -40,10 +40,7 @@ private:
 	void RegisterTools();
 
 	/** Returns the toolkit as a FCustomEditorModeToolkit_New */
-	FCustomEditorModeToolkit_New* GetToolkit() const;
-
-	/** Return the active tool */
-	UInteractiveTool* GetActiveTool() const;
+	FNewCustomEditorModeToolkit* GetToolkit() const;
 
 	/** Return the name of the active palette */
 	FName GetActivePaletteName() const;

@@ -1,16 +1,15 @@
-#include "CustomEditorModeToolkit_New.h"
-#include "CustomEditorModeCommands_New.h"
+#include "NewCustomEditorModeToolkit.h"
+#include "NewCustomEditorModeCommands.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "InteractiveTool.h"
 #include "Tools/EdModeInteractiveToolsContext.h"
 
-FCustomEditorModeToolkit_New::FCustomEditorModeToolkit_New()
+FNewCustomEditorModeToolkit::FNewCustomEditorModeToolkit()
 {
-	ActiveTool = nullptr;
 	bUsesToolkitBuilder = true;
 }
 
-void FCustomEditorModeToolkit_New::Init(const TSharedPtr<IToolkitHost>& InitToolkitHost, TWeakObjectPtr<UEdMode> InOwningMode)
+void FNewCustomEditorModeToolkit::Init(const TSharedPtr<IToolkitHost>& InitToolkitHost, TWeakObjectPtr<UEdMode> InOwningMode)
 {
 	FModeToolkit::Init(InitToolkitHost, InOwningMode);
 
@@ -32,6 +31,18 @@ void FCustomEditorModeToolkit_New::Init(const TSharedPtr<IToolkitHost>& InitTool
 	ToolWarningArea->SetText(FText::FromString("Tool Warning Area"));
 	ToolWarningArea->SetVisibility(EVisibility::Visible); // Set to always visible for this example
 
+	// Create details view
+	FPropertyEditorModule& PropertyEditorModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+
+	FDetailsViewArgs DetailsViewArgs;
+	DetailsViewArgs.bAllowSearch = false;
+	DetailsViewArgs.bShowPropertyMatrixButton = false;
+	DetailsViewArgs.bShowOptions = false;
+	DetailsViewArgs.bHideSelectionTip = true;
+	DetailsViewArgs.NameAreaSettings = FDetailsViewArgs::HideNameArea;
+
+	ModeDetailsView = PropertyEditorModule.CreateDetailView(DetailsViewArgs);
+
 	// Link this toolkit to the editor mode builder and build the tab
 	if (HasToolkitBuilder())
 	{
@@ -48,24 +59,24 @@ void FCustomEditorModeToolkit_New::Init(const TSharedPtr<IToolkitHost>& InitTool
 			];
 	}
 
-	GetScriptableEditorMode()->GetInteractiveToolsContext(EToolsContextScope::EdMode)->OnToolWarningMessage.AddSP(this, &FCustomEditorModeToolkit_New::PostToolWarning);
+	GetScriptableEditorMode()->GetInteractiveToolsContext(EToolsContextScope::EdMode)->OnToolWarningMessage.AddSP(this, &FNewCustomEditorModeToolkit::PostToolWarning);
 }
 
-void FCustomEditorModeToolkit_New::GetToolPaletteNames(TArray<FName>& PaletteNames) const
+void FNewCustomEditorModeToolkit::GetToolPaletteNames(TArray<FName>& PaletteNames) const
 {
 	PaletteNames.Reset();
 
-	for (const FCustomEditorModeCommands_New::FPaletteCommand& Palette : FCustomEditorModeCommands_New::Get().GetPalettes())
+	for (const FNewCustomEditorModeCommands::FPaletteCommand& Palette : FNewCustomEditorModeCommands::Get().GetPalettes())
 	{
 		PaletteNames.Add(FName(Palette.Name));
 	}
 }
 
-void FCustomEditorModeToolkit_New::RebuildModeToolPalette()
+void FNewCustomEditorModeToolkit::RebuildModeToolPalette()
 {
 	ToolkitBuilder->InitializeCategoryToolbar(true);
 
-	const FCustomEditorModeCommands_New& Commands = FCustomEditorModeCommands_New::Get();
+	const FNewCustomEditorModeCommands& Commands = FNewCustomEditorModeCommands::Get();
 
 	TSharedPtr<FUICommandInfo> ActivePaletteOnLoad;
 	TArray<FName> PaletteNames;
@@ -78,7 +89,7 @@ void FCustomEditorModeToolkit_New::RebuildModeToolPalette()
 
 		// Find tools for this palette
 		TArray<TSharedPtr<FUICommandInfo>> PaletteCommandList;
-		for (const FCustomEditorModeCommands_New::FStartToolCommand& Tool : Commands.GetTools())
+		for (const FNewCustomEditorModeCommands::FStartToolCommand& Tool : Commands.GetTools())
 		{
 			if (Tool.PaletteName == PaletteName)
 			{
@@ -113,53 +124,48 @@ void FCustomEditorModeToolkit_New::RebuildModeToolPalette()
 	ToolkitBuilder->RefreshCategoryToolbarWidget(true);
 }
 
-FText FCustomEditorModeToolkit_New::GetToolPaletteDisplayName(FName Palette) const
+FText FNewCustomEditorModeToolkit::GetToolPaletteDisplayName(FName Palette) const
 {
 	return FText::FromName(Palette);
 }
 
-TSharedPtr<SWidget> FCustomEditorModeToolkit_New::GetInlineContent() const
+TSharedPtr<SWidget> FNewCustomEditorModeToolkit::GetInlineContent() const
 {
 	return ToolkitWidget;
 }
 
-FName FCustomEditorModeToolkit_New::GetToolkitFName() const
+FName FNewCustomEditorModeToolkit::GetToolkitFName() const
 {
 	return FName("CustomEditorMode_New");
 }
 
-FText FCustomEditorModeToolkit_New::GetBaseToolkitName() const
+FText FNewCustomEditorModeToolkit::GetBaseToolkitName() const
 {
 	return NSLOCTEXT("CustomEditorModeToolkit", "DisplayName", "CustomEditor Tool");
 }
 
-FName FCustomEditorModeToolkit_New::GetActivePaletteName() const
+void FNewCustomEditorModeToolkit::OnToolStarted(UInteractiveToolManager* Manager, UInteractiveTool* Tool)
 {
-	if (ToolkitBuilder != nullptr)
-	{
-		return ToolkitBuilder->GetActivePaletteName();
-	}
-
-	return FName();
-}
-
-void FCustomEditorModeToolkit_New::OnToolStarted(UInteractiveToolManager* Manager, UInteractiveTool* Tool)
-{
-	ActiveTool = Tool;
-
 	FModeToolkit::OnToolStarted(Manager, Tool);
+
+	// Set detail panel object
+	if (UInteractiveTool* ActiveTool = OwningEditorMode->GetToolManager(EToolsContextScope::EdMode)->GetActiveTool(EToolSide::Left))
+	{
+		const TArray<UObject*>&  Properties = ActiveTool->GetToolProperties();
+		ModeDetailsView->SetObject(Properties.IsEmpty() ? nullptr : Properties[0]);
+	}
 }
 
-void FCustomEditorModeToolkit_New::OnToolEnded(UInteractiveToolManager* Manager, UInteractiveTool* Tool)
+void FNewCustomEditorModeToolkit::OnToolEnded(UInteractiveToolManager* Manager, UInteractiveTool* Tool)
 {
 	FModeToolkit::OnToolEnded(Manager, Tool);
 
-	ClearToolWarning();
+	ModeDetailsView->SetObject(nullptr);
 
-	ActiveTool = nullptr;
+	ClearToolWarning();
 }
 
-void FCustomEditorModeToolkit_New::InitToolkitBuilder()
+void FNewCustomEditorModeToolkit::InitToolkitBuilder()
 {
 	UEdMode* ScriptableMode = GetScriptableEditorMode().Get();
 
@@ -177,23 +183,29 @@ void FCustomEditorModeToolkit_New::InitToolkitBuilder()
 	ToolkitBuilder->SetCategoryButtonLabelVisibility(true);
 
 	// Bind OnPaletteChanged event and store the event for future call
-	ActivePaletteChangedHandle = ToolkitBuilder->OnActivePaletteChanged.AddRaw(this, &FCustomEditorModeToolkit_New::OnPaletteChanged);
+	ActivePaletteChangedHandle = ToolkitBuilder->OnActivePaletteChanged.AddRaw(this, &FNewCustomEditorModeToolkit::OnPaletteChanged);
 }
 
-void FCustomEditorModeToolkit_New::OnPaletteChanged()
+void FNewCustomEditorModeToolkit::OnPaletteChanged()
 {
+	// Deactivate the active tool
+	if (UInteractiveToolManager* ToolManager = OwningEditorMode->GetToolManager(EToolsContextScope::EdMode))
+	{
+		ToolManager->DeactivateTool(EToolSide::Left, EToolShutdownType::Completed);
+	}
+
 	// Make the new active palette visible
 	ToolkitBuilder->SetActivePaletteCommandsVisibility(EVisibility::Visible);
 }
 
-void FCustomEditorModeToolkit_New::PostToolWarning(const FText& Message)
+void FNewCustomEditorModeToolkit::PostToolWarning(const FText& Message)
 {
 	// Set the text and show it
 	ToolWarningArea->SetText(Message);
 	ToolWarningArea->SetVisibility(EVisibility::Visible);
 }
 
-void FCustomEditorModeToolkit_New::ClearToolWarning()
+void FNewCustomEditorModeToolkit::ClearToolWarning()
 {
 	// Clear the text and hide it
 	ToolWarningArea->SetText(FText());

@@ -3,15 +3,15 @@
 #include "CoreMinimal.h"
 #include "EditorModes.h"
 #include "Toolkits/BaseToolkit.h"
-#include "CustomEditorMode_New.h"
+#include "NewCustomEditorMode.h"
 
 /**
  * Toolkit for a custom editor mode
  */
-class FCustomEditorModeToolkit_New : public FModeToolkit
+class FNewCustomEditorModeToolkit : public FModeToolkit
 {
 public:
-	FCustomEditorModeToolkit_New();
+	FNewCustomEditorModeToolkit();
 
 	// FModeToolkit interface 
 	virtual void Init(const TSharedPtr<IToolkitHost>& InitToolkitHost, TWeakObjectPtr<UEdMode> InOwningMode) override;
@@ -26,9 +26,6 @@ public:
 
 	/** Return the name of the active palette */
 	FName GetActivePaletteName() const;
-
-	/** The tool currently active */
-	UInteractiveTool* ActiveTool;
 
 protected:
 	/** Called when starting to use a tool */

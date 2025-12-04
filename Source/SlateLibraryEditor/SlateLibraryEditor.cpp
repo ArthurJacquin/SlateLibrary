@@ -11,8 +11,8 @@
 #include "Framework/Docking/TabManager.h"
 
 // New Custom Editor Mode
-#include "CustomEditorModeNew/CustomEditorModeCommands_New.h"
-#include "CustomEditorModeNew/CustomEditorModeStyle_New.h"
+#include "NewCustomEditorMode/NewCustomEditorModeCommands.h"
+#include "NewCustomEditorMode/NewCustomEditorModeStyle.h"
 
 IMPLEMENT_MODULE(SlateLibraryEditor, SlateLibraryEditor);
 
@@ -38,8 +38,8 @@ void SlateLibraryEditor::StartupModule()
     FCustomEditorModeCommands::Register();
 
     //New Custom Editor Mode setup
-    FCustomEditorModeStyle_New::Initialize();
-    FCustomEditorModeCommands_New::Register();
+    FNewCustomEditorModeStyle::Initialize();
+    FNewCustomEditorModeCommands::Register();
 
     //Dockable Tab Spawner: Register tab to spawn
     FGlobalTabmanager::Get()->RegisterTabSpawner(DockableTabId,
@@ -54,8 +54,8 @@ void SlateLibraryEditor::ShutdownModule()
     FCustomEditorModeCommands::Unregister();
 
     // New Custom Editor Mode
-    FCustomEditorModeCommands_New::Unregister();
-    FCustomEditorModeStyle_New::Shutdown();
+    FNewCustomEditorModeCommands::Unregister();
+    FNewCustomEditorModeStyle::Shutdown();
 }
 
 const FName SlateLibraryEditor::DockableTabId = TEXT("DockableTab");

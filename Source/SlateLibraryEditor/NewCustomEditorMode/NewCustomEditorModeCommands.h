@@ -6,10 +6,10 @@
 /**
  * Commands for a custom editor mode
  */
-class FCustomEditorModeCommands_New : public TCommands<FCustomEditorModeCommands_New>
+class FNewCustomEditorModeCommands : public TCommands<FNewCustomEditorModeCommands>
 {
 public:
-	FCustomEditorModeCommands_New();
+	FNewCustomEditorModeCommands();
 
 	virtual void RegisterCommands() override;
 
