@@ -11,19 +11,20 @@ public class SlateLibraryEditor: ModuleRules
         );
 
         PrivateDependencyModuleNames.AddRange(new string[] {
+            "Blutility",
             "Core",
             "CoreUObject",
+            "EditorFramework",
             "Engine",
+            "InputCore",
+            "InteractiveToolsFramework",
+            "LevelEditor",
             "SlateCore",
             "Slate",
-            "LevelEditor",
-            "Blutility",
+            "SlateLibrary",
             "UMG",
             "UnrealEd",
-            "InputCore",
-            "EditorFramework",
-            "WidgetRegistration",
-            "InteractiveToolsFramework"
+            "WidgetRegistration"
         });
     }
 }

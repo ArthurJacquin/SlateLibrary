@@ -14,6 +14,10 @@
 #include "NewCustomEditorMode/NewCustomEditorModeCommands.h"
 #include "NewCustomEditorMode/NewCustomEditorModeStyle.h"
 
+// Details customization
+#include "DetailsCustomization/CustomDetailsActorDetailsCustomization.h"
+#include "Actors/CustomDetailsActor.h"
+
 IMPLEMENT_MODULE(SlateLibraryEditor, SlateLibraryEditor);
 
 #define LOCTEXT_NAMESPACE "SlateLibraryEditor"
@@ -46,6 +50,10 @@ void SlateLibraryEditor::StartupModule()
         FOnSpawnTab::CreateRaw(this, &SlateLibraryEditor::SpawnDockableTab),
         FCanSpawnTab()
         );
+
+    // Details customization
+    FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+    PropertyModule.RegisterCustomClassLayout(ACustomDetailsActor::StaticClass()->GetFName(), FOnGetDetailCustomizationInstance::CreateStatic(&FCustomDetailsActorDetailsCustomization::MakeInstance));
 }
 
 void SlateLibraryEditor::ShutdownModule()
@@ -56,6 +64,10 @@ void SlateLibraryEditor::ShutdownModule()
     // New Custom Editor Mode
     FNewCustomEditorModeCommands::Unregister();
     FNewCustomEditorModeStyle::Shutdown();
+
+    // Details customization
+    FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+    PropertyModule.UnregisterCustomClassLayout(ACustomDetailsActor::StaticClass()->GetFName());
 }
 
 const FName SlateLibraryEditor::DockableTabId = TEXT("DockableTab");
